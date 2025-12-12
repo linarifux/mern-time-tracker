@@ -21,9 +21,11 @@ export const createInvoice = async (req, res) => {
   res.status(201).json(invoice);
 };
 
+// Backend: controllers/invoice.controller.js
 export const getInvoices = async (req, res) => {
   const invoices = await Invoice.find({ userId: req.user._id })
-    .populate("clientId")
-    .populate("sessions");
+    .populate("clientId")  // Get Client Name/Rate
+    .populate("sessions"); // <--- VITAL: Get Session Details (notes, date, etc.)
+    
   res.json(invoices);
 };
