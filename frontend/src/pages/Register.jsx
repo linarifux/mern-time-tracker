@@ -1,92 +1,92 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false); // Track success state
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const onSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    setError('');
     try {
-      await register(name, email, password);
-      navigate("/");
-    } catch (e) {
-      setError(e?.response?.data?.message || "Registration failed");
-    } finally {
-      setLoading(false);
+      await register(formData.name, formData.email, formData.password);
+      setSuccess(true);
+      // Optional: Automatically redirect after 3 seconds
+      setTimeout(() => navigate('/login'), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed');
     }
   };
 
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
+        <div className="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+          <div className="text-5xl mb-4">📧</div>
+          <h2 className="text-2xl font-bold text-white mb-2">Check your Inbox</h2>
+          <p className="text-gray-400 mb-6">
+            We've sent a verification link to <strong>{formData.email}</strong>. 
+            Please verify your email to log in.
+          </p>
+          <Link to="/login" className="text-cyan-400 hover:underline">
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-950">
-      {" "}
-      <div className="w-full max-w-md bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-800">
-        {" "}
-        <h2 className="text-2xl font-bold text-center text-cyan-400 mb-6">
-          Create an Account
-        </h2>{" "}
-        <form onSubmit={onSubmit} className="space-y-5">
-          {" "}
+    <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
+      <div className="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full">
+        <h2 className="text-2xl font-bold text-cyan-400 mb-6 text-center">Create Account</h2>
+        {error && <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded mb-4 text-sm">{error}</div>}
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            {" "}
-            <label className="block text-gray-300 text-sm mb-2">Name</label>
+            <label className="block text-gray-400 text-sm mb-1">Full Name</label>
             <input
               type="text"
-              className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              placeholder="Your full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
-            />{" "}
+            />
           </div>
           <div>
-            <label className="block text-gray-300 text-sm mb-2">Email</label>
+            <label className="block text-gray-400 text-sm mb-1">Email Address</label>
             <input
               type="email"
-              className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
             />
           </div>
           <div>
-            <label className="block text-gray-300 text-sm mb-2">Password</label>
+            <label className="block text-gray-400 text-sm mb-1">Password</label>
             <input
               type="password"
-              className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
             />
           </div>
-          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
           <button
             type="submit"
-            disabled={loading}
-            className="w-full py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-semibold transition-colors disabled:opacity-60"
+            className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 rounded-lg transition-colors"
           >
-            {loading ? "Creating Account..." : "Register"}
+            Register
           </button>
         </form>
-        <p className="text-gray-400 text-sm text-center mt-6">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-cyan-400 hover:text-cyan-300 font-medium"
-          >
-            Login
-          </Link>
-        </p>
+        <div className="mt-4 text-center text-sm text-gray-400">
+          Already have an account? <Link to="/login" className="text-cyan-400 hover:underline">Login</Link>
+        </div>
       </div>
     </div>
   );

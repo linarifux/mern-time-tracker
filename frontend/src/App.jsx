@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import Invoices from "./pages/Invoices";
 import PrivateRoute from "./components/PrivateRoute";
+import VerifyEmail from "./pages/VerifyEmail";
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
               </PrivateRoute>
             }
           />
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

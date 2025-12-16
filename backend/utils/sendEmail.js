@@ -1,4 +1,6 @@
 import nodemailer from "nodemailer";
+import dotenv from 'dotenv'
+dotenv.configDotenv()
 
 const sendEmail = async (options) => {
   // Create a transporter

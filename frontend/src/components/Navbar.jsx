@@ -14,7 +14,7 @@ export default function Navbar() {
     // Added 'w-full' and 'left-0' to ensure it spans the whole width
     <nav className="sticky top-0 z-20 w-full left-0 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 px-6 py-3 flex items-center justify-between shadow-md">
       <div className="flex items-center space-x-2">
-        <span className="text-cyan-400 text-xl font-bold">⏱️ Client Time Tracker</span>
+        <span className="text-cyan-400 text-xl font-bold"><NavLink to={'/'}>⏱️ Easy Time Tracker</NavLink></span>
       </div>
 
       <div className="flex items-center space-x-6">
