@@ -6,7 +6,8 @@ const invoiceSchema = new mongoose.Schema({
   sessions: [{ type: mongoose.Schema.Types.ObjectId, ref: "WorkSession" }],
   totalHours: Number,
   totalAmount: Number,
-  status: { type: String, enum: ["pending", "paid"], default: "pending" },
+  // CHANGED: "pending", "paid" -> "Pending", "Paid" (Matches Frontend)
+  status: { type: String, enum: ["Pending", "Paid"], default: "Pending" },
   issuedAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 

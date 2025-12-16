@@ -101,7 +101,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100 p-6">
+    <div className="min-h-screen bg-linear-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100 p-6 min-w-full">
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header Card with Manual Button */}
