@@ -1,192 +1,102 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
-import { motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+
+// Sub-components
+import ClientsHeader from "../components/clients/ClientsHeader";
+import AddClientForm from "../components/clients/AddClientForm";
+import ClientList from "../components/clients/ClientList";
+import ConfirmationModal from "../components/modals/ConfirmationModal";
 
 export default function Clients() {
   const [clients, setClients] = useState([]);
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    hourlyRate: 50,
-    notes: "",
-  });
+  const [form, setForm] = useState({ name: "", email: "", hourlyRate: "", notes: "" });
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  
+  // Modal State for Delete
+  const [clientToDelete, setClientToDelete] = useState(null);
 
   const load = async () => {
     setLoading(true);
-    const { data } = await api.get("/clients");
-    setClients(data);
-    setLoading(false);
+    try {
+      const { data } = await api.get("/clients");
+      setClients(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const submit = async (e) => {
     e.preventDefault();
-    await api.post("/clients", form);
-    setForm({ name: "", email: "", hourlyRate: 50, notes: "" });
-    load();
+    setSubmitting(true);
+    try {
+      // Artificial delay for slick animation feel
+      await new Promise((r) => setTimeout(r, 600));
+      await api.post("/clients", { ...form, hourlyRate: Number(form.hourlyRate) || 0 });
+      setForm({ name: "", email: "", hourlyRate: "", notes: "" });
+      load();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const remove = async (id) => {
-    if (!confirm("Delete client?")) return;
-    await api.delete(`/clients/${id}`);
-    load();
+  // Called when "Yes, Delete" is clicked in modal
+  const confirmDelete = async () => {
+    if (!clientToDelete) return;
+    
+    const id = clientToDelete._id;
+    // Optimistic UI update
+    setClients((prev) => prev.filter((c) => c._id !== id));
+    setClientToDelete(null); // Close modal
+    
+    try {
+      await api.delete(`/clients/${id}`);
+    } catch (err) {
+      alert("Failed to banish client. They are too powerful.");
+      load(); // Revert
+    }
   };
 
   const updateField = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100 p-6">
-      {" "}
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-gray-900/80 backdrop-blur-md border border-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-cyan-900/30 transition-shadow"
-        >
-          {" "}
-          <h2 className="text-3xl font-bold text-cyan-400 mb-2 flex items-center gap-2">
-            {" "}
-            <span className="bg-cyan-500/10 p-2 rounded-full">👥</span>
-            Clients{" "}
-          </h2>{" "}
-          <p className="text-gray-400">
-            Manage all your clients and their billing information here.
-          </p>
-        </motion.div>
+    <div className="min-h-screen bg-gray-950 text-gray-100 p-6 overflow-hidden relative">
+      {/* Background Decor */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-        {/* Add Client Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="bg-gray-900/80 backdrop-blur-md border border-gray-800 rounded-2xl p-6 shadow-lg"
-        >
-          <h3 className="text-xl font-semibold text-cyan-400 mb-4 flex items-center gap-2">
-            <span className="bg-cyan-500/10 p-2 rounded-full">➕</span>
-            Add New Client
-          </h3>
+      <div className="max-w-6xl mx-auto space-y-8 relative z-10">
+        
+        <ClientsHeader count={clients.length} />
 
-          <form className="grid md:grid-cols-2 gap-4" onSubmit={submit}>
-            <div>
-              <label className="block text-gray-300 text-sm mb-2">Name</label>
-              <input
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                placeholder="Client name"
-                value={form.name}
-                onChange={(e) => updateField("name", e.target.value)}
-                required
-              />
-            </div>
+        <AddClientForm 
+          form={form} 
+          updateField={updateField} 
+          onSubmit={submit} 
+          submitting={submitting} 
+        />
 
-            <div>
-              <label className="block text-gray-300 text-sm mb-2">Email</label>
-              <input
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                placeholder="client@example.com"
-                value={form.email}
-                onChange={(e) => updateField("email", e.target.value)}
-              />
-            </div>
+        <ClientList 
+          clients={clients} 
+          loading={loading} 
+          onDelete={(client) => setClientToDelete(client)} // Open Modal
+        />
 
-            <div>
-              <label className="block text-gray-300 text-sm mb-2">
-                Hourly Rate ($)
-              </label>
-              <input
-                type="number"
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                placeholder="Hourly rate"
-                value={form.hourlyRate}
-                onChange={(e) =>
-                  updateField("hourlyRate", Number(e.target.value))
-                }
-              />
-            </div>
+        <AnimatePresence>
+          <ConfirmationModal
+            isOpen={!!clientToDelete}
+            onClose={() => setClientToDelete(null)}
+            onConfirm={confirmDelete}
+            title="Banish Client?"
+            message={`Are you sure you want to remove ${clientToDelete?.name}? This cannot be undone.`}
+          />
+        </AnimatePresence>
 
-            <div>
-              <label className="block text-gray-300 text-sm mb-2">Notes</label>
-              <input
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                placeholder="e.g. Shopify redesign project"
-                value={form.notes}
-                onChange={(e) => updateField("notes", e.target.value)}
-              />
-            </div>
-
-            <div className="md:col-span-2 flex justify-end">
-              <button
-                type="submit"
-                className="px-6 py-2 bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-semibold rounded-lg transition-colors shadow-md"
-              >
-                Add Client
-              </button>
-            </div>
-          </form>
-        </motion.div>
-
-        {/* Client List */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="bg-gray-900/80 backdrop-blur-md border border-gray-800 rounded-2xl p-6 shadow-lg overflow-x-auto"
-        >
-          <h3 className="text-xl font-semibold text-cyan-400 mb-4 flex items-center gap-2">
-            <span className="bg-cyan-500/10 p-2 rounded-full">📋</span>
-            Client List
-          </h3>
-
-          {loading ? (
-            <p className="text-gray-500">Loading clients...</p>
-          ) : clients.length > 0 ? (
-            <table className="min-w-full text-sm text-gray-300">
-              <thead className="bg-gray-800/60 text-gray-400 uppercase text-xs tracking-wide">
-                <tr>
-                  <th className="py-3 px-4 text-left">Name</th>
-                  <th className="py-3 px-4 text-left">Email</th>
-                  <th className="py-3 px-4 text-left">Rate</th>
-                  <th className="py-3 px-4 text-left">Notes</th>
-                  <th className="py-3 px-4"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {clients.map((c) => (
-                  <tr
-                    key={c._id}
-                    className="border-b border-gray-800 hover:bg-gray-800/40 transition-colors"
-                  >
-                    <td className="py-2 px-4 font-medium text-cyan-300">
-                      {c.name}
-                    </td>
-                    <td className="py-2 px-4">{c.email || "—"}</td>
-                    <td className="py-2 px-4">
-                      ${c.hourlyRate?.toFixed?.(2) ?? c.hourlyRate}
-                    </td>
-                    <td className="py-2 px-4 max-w-xs truncate">
-                      {c.notes || "—"}
-                    </td>
-                    <td className="py-2 px-4 text-right">
-                      <button
-                        className="px-3 py-1 bg-red-600 hover:bg-red-500 rounded-md text-sm text-white font-semibold transition-colors"
-                        onClick={() => remove(c._id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="text-gray-500">No clients added yet.</p>
-          )}
-        </motion.div>
       </div>
     </div>
   );
