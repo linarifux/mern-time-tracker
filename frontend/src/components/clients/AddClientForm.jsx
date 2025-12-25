@@ -6,7 +6,8 @@ export default function AddClientForm({ form, updateField, onSubmit, submitting 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.1 }}
-      className="bg-gray-900/60 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden group"
+      // Adjusted: p-6 for mobile, p-8 for desktop. rounded-2xl mobile, 3xl desktop.
+      className="bg-gray-900/60 backdrop-blur-xl border border-gray-800 rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden group"
     >
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-purple-500" />
 
@@ -14,7 +15,7 @@ export default function AddClientForm({ form, updateField, onSubmit, submitting 
         <span className="text-3xl">✨</span> Summon New Client
       </h3>
 
-      <form className="grid md:grid-cols-2 gap-6" onSubmit={onSubmit}>
+      <form className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6" onSubmit={onSubmit}>
         <InputGroup 
           label="The Boss (Name)" 
           placeholder="e.g. Tony Stark" 
@@ -27,11 +28,12 @@ export default function AddClientForm({ form, updateField, onSubmit, submitting 
           placeholder="money@bags.com" 
           value={form.email} 
           onChange={(v) => updateField("email", v)} 
+          type="email" // Added type for mobile keyboard optimization
         />
         <InputGroup 
           label="Stonks ($ / Hour)" 
           placeholder="5000" 
-          type="number"
+          type="number" // Triggers numeric keypad on mobile
           value={form.hourlyRate} 
           onChange={(v) => updateField("hourlyRate", v)} 
         />
@@ -42,13 +44,14 @@ export default function AddClientForm({ form, updateField, onSubmit, submitting 
           onChange={(v) => updateField("notes", v)} 
         />
 
-        <div className="md:col-span-2 flex justify-end">
+        <div className="md:col-span-2 pt-2">
           <motion.button
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             type="submit"
             disabled={submitting}
-            className="px-8 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-900/20 transition-all flex items-center gap-2"
+            // Adjusted: w-full for mobile (easy tap), w-auto for desktop
+            className="w-full md:w-auto px-8 py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-900/20 transition-all flex items-center justify-center gap-2 ml-auto"
           >
             {submitting ? (
               <><span className="animate-spin">🌀</span> Processing...</>
@@ -62,7 +65,7 @@ export default function AddClientForm({ form, updateField, onSubmit, submitting 
   );
 }
 
-// Helper for inputs to keep JSX clean
+// Helper for inputs
 function InputGroup({ label, type = "text", placeholder, value, onChange, required }) {
   return (
     <div className="space-y-2">
@@ -70,7 +73,8 @@ function InputGroup({ label, type = "text", placeholder, value, onChange, requir
       <motion.input
         whileFocus={{ scale: 1.01, borderColor: "#22d3ee" }}
         type={type}
-        className="w-full px-4 py-3 rounded-xl bg-gray-950/50 border border-gray-700 text-gray-200 focus:outline-none transition-all placeholder-gray-600"
+        // Adjusted: text-base prevents iOS zoom. py-3.5 larger touch target.
+        className="w-full px-4 py-3.5 rounded-xl bg-gray-950/50 border border-gray-700 text-gray-200 text-base focus:outline-none transition-all placeholder-gray-600"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
