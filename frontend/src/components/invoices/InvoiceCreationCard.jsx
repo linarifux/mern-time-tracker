@@ -1,6 +1,13 @@
 import { motion } from "framer-motion";
 
-export default function InvoiceCreationCard({ clients, selectedClient, setSelectedClient, onCreate, disabled }) {
+export default function InvoiceCreationCard({ 
+  clients, 
+  selectedClient, 
+  setSelectedClient, 
+  onCreate, 
+  disabled,
+  isCreating // <--- New Prop
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -41,14 +48,22 @@ export default function InvoiceCreationCard({ clients, selectedClient, setSelect
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={onCreate}
-          disabled={disabled}
-          className={`px-8 py-3.5 rounded-xl font-bold shadow-lg flex items-center gap-2 transition-all ${
-            disabled
+          disabled={disabled || isCreating} // Disable if creating
+          className={`px-8 py-3.5 rounded-xl font-bold shadow-lg flex items-center gap-2 transition-all min-w-[200px] justify-center ${
+            disabled || isCreating
               ? "bg-gray-800 text-gray-500 cursor-not-allowed"
               : "bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-green-900/20"
           }`}
         >
-          {disabled ? "🚫 Select Sessions First" : "💰 Generate Invoice"}
+          {isCreating ? (
+            <>
+              <span className="animate-spin text-xl">🌀</span> Printing Money...
+            </>
+          ) : disabled ? (
+            "🚫 Select Sessions"
+          ) : (
+            "💰 Generate Invoice"
+          )}
         </motion.button>
       </div>
     </motion.div>
